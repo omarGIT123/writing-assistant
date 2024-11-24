@@ -20,11 +20,9 @@ class PGhandler:
         # Add a new history record for the user.
         with self.conn.cursor() as cursor:
             cursor.execute(
-                """
-                INSERT INTO user_history (user_id, text)
+                """ INSERT INTO user_history (user_id, text)
                 VALUES (%s, %s)
-                RETURNING id;
-            """,
+                RETURNING id; """,
                 (user_id, text),
             )
             self.conn.commit()
@@ -33,12 +31,10 @@ class PGhandler:
         # Retrieve the latest history records for a user, limited to a fixed number.
         with self.conn.cursor(cursor_factory=RealDictCursor) as cursor:
             cursor.execute(
-                """
-                SELECT text FROM user_history
+                """ SELECT text FROM user_history
                 WHERE user_id = %s
                 ORDER BY timestamp DESC
-                LIMIT %s;
-            """,
+                LIMIT %s;  """,
                 (user_id, limit),
             )
             return [record["text"] for record in cursor.fetchall()]
@@ -47,16 +43,14 @@ class PGhandler:
         # Replace outdated data with new input texts
         with self.conn.cursor() as cursor:
             cursor.execute(
-                """
-                DELETE FROM user_history
+                """DELETE FROM user_history
                 WHERE user_id = %s
                 AND id NOT IN (
                     SELECT id FROM user_history
                     WHERE user_id = %s
                     ORDER BY timestamp DESC
                     LIMIT %s
-                );
-            """,
+                );  """,
                 (user_id, user_id, max_records),
             )  # This sql query replaces the oldest data point with the new one to keep the data for each user at a maximum number.
             self.conn.commit()
