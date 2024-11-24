@@ -24,19 +24,19 @@ def get_suggestions():
 
     text = data.get("text")
     prompt = data.get("prompt")
-    user_id = data.get("user_id")
+    file_id = data.get("file_id") # file_id here is the id of the docs file ! 
 
     # Check for missing fields
-    if not text or not prompt or not user_id:
-        return jsonify({"error": "'text', 'prompt', and 'user_id' are required"}), 400
+    if not text or not prompt or not file_id:
+        return jsonify({"error": "'text', 'prompt', and 'file_id' are required"}), 400
 
     try:
         # Add input to history
-        db_handler.add_history(user_id, text)
-        db_handler.clean_history(user_id, max_records=20)
+        db_handler.add_history(file_id, text)
+        db_handler.clean_history(file_id, max_records=20)
 
         # Fetch user history for pattern recognition
-        user_history = db_handler.get_user_history(user_id, limit=20)
+        user_history = db_handler.get_user_history(file_id, limit=20)
         history_pattern = " ".join(user_history)
 
         # Generate suggestions using OpenAI
