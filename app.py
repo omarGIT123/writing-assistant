@@ -45,7 +45,8 @@ def get_suggestions():
             messages=[
                 {
                     "role": "system",
-                    "content": f"{prompt}. \nAnalyze the following previous textual entries to identify key writing patterns, thought processes, habits, and unique characteristics of the user. Use these insights to tailor your suggestions for maximum relevance and personalization: {history_pattern}",
+                    "content": f"{prompt}. \nAnalyze the following previous textual entries to identify key writing patterns, thought processes, habits, and unique characteristics of the user. 
+                    Use these insights to tailor your suggestions for maximum relevance and personalization: {history_pattern}",
                 },
                 {"role": "user", "content": text},
             ],
