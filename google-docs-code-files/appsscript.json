@@ -1,0 +1,34 @@
+{
+  "timeZone": "America/New_York",
+  "dependencies": {},
+  "oauthScopes": [
+    "https://www.googleapis.com/auth/documents",
+    "https://www.googleapis.com/auth/script.container.ui",
+    "https://www.googleapis.com/auth/script.external_request",
+    "https://www.googleapis.com/auth/script.locale"
+  ],
+  "exceptionLogging": "STACKDRIVER",
+  "runtimeVersion": "V8",
+  "addOns": {
+    "common": {
+      "name": "SynAI Your writing assistant",
+      "logoUrl": "https://drive.google.com/uc?export=view&id=1JNe-OFT72Fof3LQSVgRo502Mse4mGgWE",
+      "useLocaleFromApp": true,
+      "openLinkUrlPrefixes": ["https://"]
+    },
+    "docs": {
+      "homepageTrigger": {
+        "runFunction": "onOpen",
+        "enabled": true
+      }
+    }
+  },
+  "urlFetchWhitelist": [
+    "https://openrouter.ai/api/v1",
+    "https://writing-assistant-b13q.onrender.com/suggestions"
+  ],
+  "webapp": {
+    "executeAs": "USER_DEPLOYING",
+    "access": "ANYONE_ANONYMOUS"
+  }
+}

@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Writing Assistant</title>
+
+    <!-- Google Fonts for a clean, readable typography -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      body {
+        font-family: "Nunito", sans-serif;
+        background: #f0f0f0;
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: #333;
+      }
+
+      .container {
+        text-align: center;
+        width: 100%;
+        max-width: 900px;
+        background: #ffffff;
+        border-radius: 15px;
+        padding: 40px 50px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      h2 {
+        font-weight: 600;
+        font-size: 32px;
+        margin-bottom: 20px;
+        color: #1e2a32;
+      }
+
+      .system-prompt {
+        width: 100%;
+        padding: 18px;
+        font-size: 12px;
+        border: 2px solid #ccc;
+        border-radius: 8px;
+        background-color: #fafafa;
+        color: #333;
+        margin-bottom: 20px;
+        box-sizing: border-box;
+        outline: none;
+        transition: border-color 0.3s ease;
+      }
+
+      .system-prompt:focus {
+        border-color: #888;
+      }
+
+      .submit-button {
+        padding: 14px 28px;
+        font-size: 18px;
+        background-color: #3a4a61;
+        color: #fff;
+        border: none;
+        border-radius: 30px;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.3s ease;
+        width: 100%;
+        max-width: 250px;
+      }
+
+      .submit-button:hover {
+        background-color: #2e3b4a;
+        transform: scale(1.05);
+      }
+
+      .chat-container {
+        margin-top: 30px;
+        padding: 25px;
+        background-color: #f7f7f7;
+        border-radius: 15px;
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+        display: inline-block;
+        width: 100%;
+        max-width: 480px;
+      }
+
+      .chat-bubble {
+        position: relative;
+        background-color: #e0e0e0;
+        color: #333;
+        border-radius: 15px;
+        padding: 18px;
+        font-size: 14px;
+        max-width: 80%;
+        margin-bottom: 15px;
+        overflow-y: auto;
+        max-height: 200px;
+        position: relative;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+
+      .chat-bubble::after {
+        content: "";
+        position: absolute;
+        bottom: -10px;
+        left: 20px;
+        border-width: 8px;
+        border-style: solid;
+        border-color: #e0e0e0 transparent transparent transparent;
+      }
+
+      .loading {
+        display: none;
+        position: relative;
+        top: 80%;
+        left: 40%;
+        transform: translate(-50%, -50%);
+        width: 25px;
+        height: 25px;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #3a4a61;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      .retry-button {
+        display: none;
+        background-color: #3a4a61; /* Retry button in slate blue */
+        border: none;
+        border-radius: 30px;
+        padding: 10px 22px;
+        color: #fff;
+        font-size: 14px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+
+      .retry-button:hover {
+        background-color: #2e3b4a;
+      }
+
+      .instruction-text {
+        font-size: 14px;
+        color: #555;
+        margin-bottom: 15px;
+        font-weight: 600;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>Writing Assistant</h2>
+      <textarea
+        id="systemPrompt"
+        class="system-prompt"
+        placeholder="You are an experienced writer and linguist, you take in a sentence or a word, and provide a better reformulation...."
+      ></textarea>
+      <button class="submit-button" onclick="savePrompt()">Submit</button>
+
+      <p id="instruction-text" class="instruction-text">
+        Select the text you want the AI to help you with
+      </p>
+
+      <div class="chat-container">
+        <div id="chat-bubble" class="chat-bubble">
+          Hi there! How can I assist you?
+        </div>
+        <div id="loading-spinner" class="loading"></div>
+        <div class="floating-icon" onclick="handleClick()"></div>
+      </div>
+
+      <button id="retry-button" class="retry-button" onclick="retryFetch()">
+        Retry
+      </button>
+    </div>
+
+    <script>
+      function handleClick() {
+        google.script.run.performAction();
+      }
+
+      function savePrompt() {
+        const prompt = document.getElementById("systemPrompt").value;
+        google.script.run.saveSystemPrompt(prompt);
+        alert("Prompt saved successfully!");
+      }
+
+      let lastSelectedText = "";
+
+      function updateChatBubble() {
+        google.script.run
+          .withSuccessHandler(function (currentText) {
+            if (currentText && currentText !== lastSelectedText) {
+              lastSelectedText = currentText;
+              showLoading();
+              fetchSuggestions(currentText);
+            }
+          })
+          .getSelectedText();
+      }
+
+      function fetchSuggestions(selectedText) {
+        const systemPrompt =
+          document.getElementById("systemPrompt").value ||
+          "You are an experienced writer and linguist, you take in a sentence or a word, and provide a better reformulation. Make your response organized and clear to the user.";
+
+        google.script.run
+          .withSuccessHandler(function (response) {
+            hideLoading();
+            displayResponse(response);
+          })
+          .getSuggestionsFromAPI(selectedText, systemPrompt);
+      }
+
+      function retryFetch() {
+        showLoading();
+        fetchSuggestions(lastSelectedText);
+      }
+
+      function showLoading() {
+        document.getElementById("loading-spinner").style.display = "block";
+        document.getElementById("retry-button").style.display = "none";
+        document.getElementById("chat-bubble").style.display = "none";
+      }
+
+      function hideLoading() {
+        document.getElementById("loading-spinner").style.display = "none";
+        document.getElementById("retry-button").style.display = "inline-block";
+        document.getElementById("chat-bubble").style.display = "block";
+      }
+
+      function displayResponse(response) {
+        const chatBubble = document.getElementById("chat-bubble");
+        chatBubble.innerText = response;
+      }
+
+      setInterval(updateChatBubble, 1000);
+    </script>
+  </body>
+</html>
