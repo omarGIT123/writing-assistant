@@ -64,4 +64,4 @@ SynAI combines Flask for API handling, PostgreSQL for adaptive history managemen
 ## 📧 Contact  
 
 For inquiries, suggestions, or collaborations, reach out to:  
-**Email**: [omarradai142@gmail.com](mailto:omarradai142@gmail.com)  
+**Email**: [omarradai142@gmail.com](mailto:omarbradai142@gmail.com)  
